@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">ICC</string>
+    <string name="connected">Connected! ;)</string>
+    <string name="disconnected">Disconnected! :(</string>
+    <string name="verifying">Verifying... :|</string>
+    <string name="verify">VERIFY</string>
+    <string name="cancel">CANCEL</string>
+</resources>
