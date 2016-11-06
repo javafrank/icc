@@ -5,4 +5,5 @@
     <string name="verifying">Verifying... :|</string>
     <string name="verify">VERIFY</string>
     <string name="cancel">CANCEL</string>
+    <string name="icc_status">ICC Status</string>
 </resources>
