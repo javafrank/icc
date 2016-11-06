@@ -8,6 +8,11 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.UnknownHostException;
 
 /**
  * Created by frank on 10/23/16.
@@ -48,7 +53,7 @@ public class HomeActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Boolean aBoolean) {
-            if (isOnline()) {
+            if (aBoolean) {
                 connectedText.setText(getResources().getString(R.string.connected));
                 connectedText.setTextColor(getResources().getColor(R.color.connected));
             } else {
@@ -58,17 +63,55 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         public boolean isOnline() {
-            Runtime runtime = Runtime.getRuntime();
+            /*Runtime runtime = Runtime.getRuntime();
             try {
 
-                Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
+                Process ipProcess = runtime.exec("ping -c 1 www.google.com");
                 int     exitValue = ipProcess.waitFor();
                 return (exitValue == 0);
 
             } catch (IOException e)          { e.printStackTrace(); }
-            catch (InterruptedException e) { e.printStackTrace(); }
+            catch (InterruptedException e) { e.printStackTrace(); }*/
 
-            return false;
+            /*try {
+                if (InetAddress.getByName("www.google.com").isReachable(6000)) {
+                    return true;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return false;*/
+
+            try {
+                final URL url = new URL("http://www.google.com");
+                final URLConnection conn = url.openConnection();
+                conn.connect();
+                return true;
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                return false;
+            }
+        }
+
+        public class NetTask extends AsyncTask<String, Integer, String>
+        {
+            @Override
+            protected String doInBackground(String... params)
+            {
+                InetAddress addr = null;
+                try
+                {
+                    addr = InetAddress.getByName(params[0]);
+                }
+
+                catch (UnknownHostException e)
+                {
+                    e.printStackTrace();
+                }
+                return addr.getHostAddress();
+            }
         }
     }
 }
