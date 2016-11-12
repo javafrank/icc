@@ -6,9 +6,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -30,6 +32,19 @@ public class HomeActivity extends AppCompatActivity {
 
     NotificationCompat.Builder mBuilder;
 
+    // Create the Handler object (on the main thread by default)
+    Handler handler = new Handler();
+    // Define the code block to be executed
+    private Runnable runnableCode = new Runnable() {
+        @Override
+        public void run() {
+            // Do something here on the main thread
+            verifyInternetConnection();
+            // Repeat this the same runnable code block again another 2 seconds
+            handler.postDelayed(runnableCode, 10000);
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,8 +52,6 @@ public class HomeActivity extends AppCompatActivity {
 
         connectedText = (TextView) findViewById(R.id.connectedText);
         verifyButton = (Button) findViewById(R.id.verifyButton);
-
-        verifyInternetConnection();
         verifyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -47,6 +60,15 @@ public class HomeActivity extends AppCompatActivity {
         });
 
         createAndDisplayNotification();
+
+        // Start the initial runnable task by posting through the handler
+        handler.post(runnableCode);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        cancelNotification();
     }
 
     private void verifyInternetConnection() {
@@ -97,6 +119,11 @@ public class HomeActivity extends AppCompatActivity {
         mNotificationManager.notify(
                 0,
                 mBuilder.build());
+    }
+
+    private void cancelNotification() {
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.cancel(0);
     }
 
     class MyAsyncTask extends AsyncTask<Void, Void, Boolean> {
