@@ -63,6 +63,27 @@ public class HomeActivity extends AppCompatActivity {
 
         // Start the initial runnable task by posting through the handler
         handler.post(runnableCode);
+
+//        launchTestService();
+        launchICCService();
+    }
+
+    public void launchTestService() {
+        // Construct our Intent specifying the Service
+        Intent i = new Intent(this, MyTestService.class);
+        // Add extras to the bundle
+        i.putExtra("foo", "bar");
+        // Start the service
+        startService(i);
+    }
+
+    public void launchICCService() {
+        // Construct our Intent specifying the Service
+        Intent i = new Intent(this, ICCService.class);
+        // Add extras to the bundle
+        i.putExtra("foo", "bar");
+        // Start the service
+        startService(i);
     }
 
     @Override
