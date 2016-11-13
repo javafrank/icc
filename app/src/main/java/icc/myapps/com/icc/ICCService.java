@@ -1,12 +1,17 @@
 package icc.myapps.com.icc;
 
 import android.app.IntentService;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -23,12 +28,15 @@ import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 public class ICCService extends IntentService {
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
+    NotificationCompat.Builder mBuilder;
 
     // Handler that receives messages from the thread
     private final class ServiceHandler extends Handler {
+
         public ServiceHandler(Looper looper) {
             super(looper);
         }
+
         @Override
         public void handleMessage(Message msg) {
             // Normally we would do some work here, like download a file.
@@ -37,6 +45,7 @@ public class ICCService extends IntentService {
                 try {
                     boolean isOnline = isOnline();
                     System.out.println("hay conexion? " + isOnline);
+                    updateNotification(isOnline);
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
                     // Restore interrupt status.
@@ -84,6 +93,8 @@ public class ICCService extends IntentService {
         // Get the HandlerThread's Looper and use it for our Handler
         mServiceLooper = thread.getLooper();
         mServiceHandler = new ServiceHandler(mServiceLooper);
+
+        createAndDisplayNotification();
     }
 
     @Override
@@ -116,5 +127,49 @@ public class ICCService extends IntentService {
     public void onDestroy() {
         Toast.makeText(this, "servicio finalizado!", Toast.LENGTH_SHORT).show();
 //        super.onDestroy();
+    }
+
+    private void createAndDisplayNotification() {
+        mBuilder = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.ic_on)
+                .setContentTitle(getResources().getString(R.string.icc_status))
+                .setContentText(getResources().getString(R.string.connected))
+                .setOngoing(true);
+        // Creates an explicit intent for an Activity in your app
+        Intent resultIntent = new Intent(this, HomeActivity.class);
+
+        // The stack builder object will contain an artificial back stack for the
+        // started Activity.
+        // This ensures that navigating backward from the Activity leads out of
+        // your application to the Home screen.
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        // Adds the back stack for the Intent (but not the Intent itself)
+        stackBuilder.addParentStack(HomeActivity.class);
+        // Adds the Intent that starts the Activity to the top of the stack
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent =
+                stackBuilder.getPendingIntent(
+                        0,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+        mBuilder.setContentIntent(resultPendingIntent);
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        // mId allows you to update the notification later on.
+        mNotificationManager.notify(0, mBuilder.build());
+    }
+
+    public void updateNotification(boolean connected) {
+        int textId = (connected) ? R.string.connected : R.string.disconnected;
+        int iconId = (connected) ? R.drawable.ic_on : R.drawable.ic_off;
+
+        mBuilder.setContentText(getString(textId));
+        mBuilder.setSmallIcon(iconId);
+
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(
+                0,
+                mBuilder.build());
     }
 }
