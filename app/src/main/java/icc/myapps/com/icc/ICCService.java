@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Binder;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Random;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 
@@ -29,6 +31,17 @@ public class ICCService extends IntentService {
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
     NotificationCompat.Builder mBuilder;
+
+    // Binder given to clients
+    private final IBinder mBinder = new LocalBinder();
+    private boolean online;
+
+    public class LocalBinder extends Binder {
+        ICCService getService() {
+            // Return this instance of LocalService so clients can call public methods
+            return ICCService.this;
+        }
+    }
 
     // Handler that receives messages from the thread
     private final class ServiceHandler extends Handler {
@@ -43,9 +56,9 @@ public class ICCService extends IntentService {
             // For our sample, we just sleep for 5 seconds.
             while (true) {
                 try {
-                    boolean isOnline = isOnline();
-                    System.out.println("hay conexion? " + isOnline);
-                    updateNotification(isOnline);
+                    online = isOnline();
+                    System.out.println("hay conexion? " + online);
+                    updateNotification(online);
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
                     // Restore interrupt status.
@@ -119,8 +132,7 @@ public class ICCService extends IntentService {
 
     @Override
     public IBinder onBind(Intent intent) {
-        // We don't provide binding, so return null
-        return null;
+        return mBinder;
     }
 
     @Override
@@ -171,5 +183,10 @@ public class ICCService extends IntentService {
         mNotificationManager.notify(
                 0,
                 mBuilder.build());
+    }
+
+    /** method for clients */
+    public boolean isOnline() {
+        return online;
     }
 }

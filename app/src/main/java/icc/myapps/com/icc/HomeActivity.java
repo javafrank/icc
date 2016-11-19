@@ -1,15 +1,19 @@
 package icc.myapps.com.icc;
 
 import android.app.NotificationManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -23,6 +27,8 @@ import java.net.URLConnection;
 public class HomeActivity extends AppCompatActivity {
     private TextView connectedText;
     private Button verifyButton;
+    ICCService iccService;
+    boolean mBound = false;
 
     // Create the Handler object (on the main thread by default)
     Handler handler = new Handler();
@@ -44,10 +50,18 @@ public class HomeActivity extends AppCompatActivity {
 
         connectedText = (TextView) findViewById(R.id.connectedText);
         verifyButton = (Button) findViewById(R.id.verifyButton);
+
+        final Context context = this;
         verifyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                verifyInternetConnection();
+//                verifyInternetConnection();
+                if (mBound) {
+                    // Call a method from the LocalService.
+                    // However, if this call were something that might hang, then this request should
+                    // occur in a separate thread to avoid slowing down the activity performance.
+                    Toast.makeText(context, "connection? " + iccService.isOnline(), Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -59,6 +73,43 @@ public class HomeActivity extends AppCompatActivity {
 //        launchTestService();
         launchICCService();
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        // Bind to LocalService
+        Intent intent = new Intent(this, ICCService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Unbind from the service
+        if (mBound) {
+            unbindService(mConnection);
+            mBound = false;
+        }
+    }
+
+    /** Defines callbacks for service binding, passed to bindService() */
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            ICCService.LocalBinder binder = (ICCService.LocalBinder) service;
+            iccService = binder.getService();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
 
     public void launchTestService() {
         // Construct our Intent specifying the Service
