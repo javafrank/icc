@@ -30,6 +30,8 @@ public class HomeActivity extends AppCompatActivity {
     ICCService iccService;
     boolean mBound = false;
 
+    private static final int MILISECONDS = 10 * 1000;
+
     // Create the Handler object (on the main thread by default)
     Handler handler = new Handler();
     // Define the code block to be executed
@@ -37,11 +39,18 @@ public class HomeActivity extends AppCompatActivity {
         @Override
         public void run() {
             // Do something here on the main thread
-            verifyInternetConnection();
+            //verifyInternetConnection();
+            reviewConnection();
             // Repeat this the same runnable code block again another 2 seconds
-            handler.postDelayed(runnableCode, 10000);
+            handler.postDelayed(this, MILISECONDS);
         }
     };
+
+    private void reviewConnection() {
+        boolean online = iccService.isOnline();
+        updateUI(online);
+        Toast.makeText(this, "connection? " + online, Toast.LENGTH_SHORT).show();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +60,6 @@ public class HomeActivity extends AppCompatActivity {
         connectedText = (TextView) findViewById(R.id.connectedText);
         verifyButton = (Button) findViewById(R.id.verifyButton);
 
-        final Context context = this;
         verifyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -60,7 +68,7 @@ public class HomeActivity extends AppCompatActivity {
                     // Call a method from the LocalService.
                     // However, if this call were something that might hang, then this request should
                     // occur in a separate thread to avoid slowing down the activity performance.
-                    Toast.makeText(context, "connection? " + iccService.isOnline(), Toast.LENGTH_SHORT).show();
+                    reviewConnection();
                 }
             }
         });
@@ -72,6 +80,8 @@ public class HomeActivity extends AppCompatActivity {
 
 //        launchTestService();
         launchICCService();
+
+        handler.postDelayed(runnableCode, MILISECONDS);
     }
 
     @Override
@@ -154,13 +164,7 @@ public class HomeActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Boolean aBoolean) {
-            if (aBoolean) {
-                connectedText.setText(getResources().getString(R.string.connected));
-                connectedText.setTextColor(getResources().getColor(R.color.connected));
-            } else {
-                connectedText.setText(getResources().getString(R.string.disconnected));
-                connectedText.setTextColor(getResources().getColor(R.color.disconnected));
-            }
+            updateUI(aBoolean);
 //            updateNotification(aBoolean);
         }
 
@@ -175,6 +179,16 @@ public class HomeActivity extends AppCompatActivity {
             } catch (IOException e) {
                 return false;
             }
+        }
+    }
+
+    private void updateUI(Boolean aBoolean) {
+        if (aBoolean) {
+            connectedText.setText(getResources().getString(R.string.connected));
+            connectedText.setTextColor(getResources().getColor(R.color.connected));
+        } else {
+            connectedText.setText(getResources().getString(R.string.disconnected));
+            connectedText.setTextColor(getResources().getColor(R.color.disconnected));
         }
     }
 }
