@@ -15,7 +15,10 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -72,10 +75,23 @@ public class ICCService extends IntentService {
 
         private boolean isOnline() {
             try {
-                final URL url = new URL("http://www.google.com");
-                final URLConnection conn = url.openConnection();
-                conn.connect();
-                return true;
+                final URL url = new URL("http://google.com/");
+                final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    BufferedReader input = new BufferedReader(new InputStreamReader(conn.getInputStream()), 8192);
+                    String strLine = null;
+                    StringBuilder response = new StringBuilder();
+                    while ((strLine = input.readLine()) != null)
+                    {
+                        response.append(strLine);
+                    }
+                    input.close();
+
+                    if (response.toString().length() > 346) {
+                        return true;
+                    }
+                }
+                return false;
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             } catch (IOException e) {
