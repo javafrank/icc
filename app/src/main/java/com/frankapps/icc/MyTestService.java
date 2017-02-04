@@ -1,4 +1,4 @@
-package icc.myapps.com.icc;
+package com.frankapps.icc;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -10,7 +10,6 @@ import android.os.Message;
 import android.widget.Toast;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
-import static java.lang.Process.*;
 
 /**
  * Created by frank on 11/12/16.

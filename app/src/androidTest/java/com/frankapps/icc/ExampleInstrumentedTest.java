@@ -1,4 +1,4 @@
-package icc.myapps.com.icc;
+package com.frankapps.icc;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

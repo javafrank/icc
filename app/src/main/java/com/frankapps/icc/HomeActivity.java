@@ -1,4 +1,4 @@
-package icc.myapps.com.icc;
+package com.frankapps.icc;
 
 import android.app.NotificationManager;
 import android.content.ComponentName;

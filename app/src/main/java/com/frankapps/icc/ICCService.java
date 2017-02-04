@@ -1,4 +1,4 @@
-package icc.myapps.com.icc;
+package com.frankapps.icc;
 
 import android.app.IntentService;
 import android.app.NotificationManager;
@@ -21,8 +21,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.util.Random;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 

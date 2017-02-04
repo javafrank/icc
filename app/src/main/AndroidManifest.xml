@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="icc.myapps.com.icc">
+    package="com.frankapps.icc">
 
     <application
         android:allowBackup="true"
@@ -8,7 +8,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".HomeActivity">
+        <activity android:name="com.frankapps.icc.HomeActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -16,11 +16,11 @@
         </activity>
 
         <service
-            android:name=".MyTestService"
+            android:name="com.frankapps.icc.MyTestService"
             android:exported="false"/>
 
         <service
-            android:name=".ICCService"
+            android:name="com.frankapps.icc.ICCService"
             android:exported="false"/>
 
     </application>
