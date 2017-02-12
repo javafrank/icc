@@ -16,10 +16,6 @@
         </activity>
 
         <service
-            android:name="com.frankapps.icc.MyTestService"
-            android:exported="false"/>
-
-        <service
             android:name="com.frankapps.icc.ICCService"
             android:exported="false"/>
 

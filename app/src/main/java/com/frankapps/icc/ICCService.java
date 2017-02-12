@@ -5,15 +5,14 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Binder;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
-import android.widget.Toast;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,46 +28,25 @@ import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
  */
 
 public class ICCService extends IntentService {
+    public static final String ONLINE_MESSAGE = "ONLINE_MESSAGE";
+    public static final String ONLINE_RESULT = "ONLINE_RESULT";
+
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
     NotificationCompat.Builder mBuilder;
 
-    // Binder given to clients
-    private final IBinder mBinder = new LocalBinder();
     private boolean online;
-
-    public class LocalBinder extends Binder {
-        ICCService getService() {
-            // Return this instance of LocalService so clients can call public methods
-            return ICCService.this;
-        }
-    }
+    private LocalBroadcastManager broadcaster;
 
     // Handler that receives messages from the thread
     private final class ServiceHandler extends Handler {
+        private static final int MILISECONDS = 10 * 1000;
 
-        public ServiceHandler(Looper looper) {
-            super(looper);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            // Normally we would do some work here, like download a file.
-            // For our sample, we just sleep for 5 seconds.
-            while (true) {
-                try {
-                    online = isOnline();
-                    System.out.println("hay conexion? " + online);
-                    updateNotification(online);
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    // Restore interrupt status.
-                    Thread.currentThread().interrupt();
-                }
-            }
-            // Stop the service using the startId, so that we don't stop
-            // the service in the middle of handling another job
-//            stopSelf(msg.arg1);
+        private void reviewConnection() {
+            online = isOnline();
+            Log.i("ICCService", "hay conexion? " + online);
+            updateNotification(online);
+            sendResult(online);
         }
 
         private boolean isOnline() {
@@ -96,6 +74,29 @@ public class ICCService extends IntentService {
                 return false;
             }
         }
+
+        public ServiceHandler(Looper looper) {
+            super(looper);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            // Create the Handler object (on the main thread by default)
+            final Handler handler = new Handler();
+            // Define the code block to be executed
+            Runnable runnableCode = new Runnable() {
+                @Override
+                public void run() {
+                    // Do something here on the main thread
+                    //verifyInternetConnection();
+                    reviewConnection();
+                    // Repeat this the same runnable code block again another 2 seconds
+                    handler.postDelayed(this, MILISECONDS);
+                }
+            };
+
+            handler.post(runnableCode);
+        }
     }
 
     // Must create a default constructor
@@ -121,6 +122,8 @@ public class ICCService extends IntentService {
         mServiceLooper = thread.getLooper();
         mServiceHandler = new ServiceHandler(mServiceLooper);
 
+        broadcaster = LocalBroadcastManager.getInstance(this);
+
         createAndDisplayNotification();
     }
 
@@ -131,7 +134,8 @@ public class ICCService extends IntentService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "servicio iniciandose! yeiiii", Toast.LENGTH_SHORT).show();
+        Log.i("ICCService", "servicio iniciado!");
+//        Toast.makeText(this, "servicio iniciandose! yeiiii", Toast.LENGTH_SHORT).show();
 
         // For each start request, send a message to start a job and deliver the
         // start ID so we know which request we're stopping when we finish the job
@@ -145,13 +149,9 @@ public class ICCService extends IntentService {
     }
 
     @Override
-    public IBinder onBind(Intent intent) {
-        return mBinder;
-    }
-
-    @Override
     public void onDestroy() {
-        Toast.makeText(this, "servicio finalizado!", Toast.LENGTH_SHORT).show();
+        Log.i("ICCService", "servicio finalizado!");
+//        Toast.makeText(this, "servicio finalizado!", Toast.LENGTH_SHORT).show();
 //        super.onDestroy();
     }
 
@@ -200,7 +200,13 @@ public class ICCService extends IntentService {
     }
 
     /** method for clients */
-    public boolean isOnline() {
-        return online;
+//    public boolean isOnline() {
+//        return ConnectionVerify.isOnline();
+//    }
+
+    public void sendResult(boolean isOnline) {
+        Intent intent = new Intent(ONLINE_RESULT);
+        intent.putExtra(ONLINE_MESSAGE, isOnline);
+        broadcaster.sendBroadcast(intent);
     }
 }
