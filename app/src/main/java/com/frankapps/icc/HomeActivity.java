@@ -49,7 +49,7 @@ public class HomeActivity extends AppCompatActivity {
     private void reviewConnection() {
         boolean online = iccService.isOnline();
         updateUI(online);
-        Toast.makeText(this, "connection? " + online, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "connection? " + online, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -73,14 +73,7 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-//        createAndDisplayNotification();
-
-        // Start the initial runnable task by posting through the handler
-//        handler.post(runnableCode);
-
-//        launchTestService();
         launchICCService();
-
         handler.postDelayed(runnableCode, MILISECONDS);
     }
 
