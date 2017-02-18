@@ -35,7 +35,6 @@ public class ICCService extends IntentService {
     private ServiceHandler mServiceHandler;
     NotificationCompat.Builder mBuilder;
 
-    private boolean online;
     private LocalBroadcastManager broadcaster;
 
     // Handler that receives messages from the thread
@@ -43,7 +42,7 @@ public class ICCService extends IntentService {
         private static final int MILISECONDS = 10 * 1000;
 
         private void reviewConnection() {
-            online = isOnline();
+            boolean online = isOnline();
             Log.i("ICCService", "hay conexion? " + online);
             updateNotification(online);
             sendResult(online);
